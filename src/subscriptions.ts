@@ -25,9 +25,9 @@ export async function notifySubscriberUrl(
 			headers: {
 				"Content-Type": "application/json",
 			},
-			body: JSON.stringify({
+			body: JSON.stringify(
 				stream,
-			}),
+			),
 		});
 	} catch (e) {
 		console.error(e);

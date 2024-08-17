@@ -1,7 +1,7 @@
 services:
     liker_event_log:
         build:
-            context: ./.devcontainer
+            context: .
             dockerfile: Dockerfile
         command: sleep infinity
         volumes:
@@ -16,4 +16,4 @@ services:
 networks:
     default:
         external: true
-        name: 'liker'
+        name: "liker"

@@ -1,24 +1,24 @@
 import { Kysely } from "kysely";
-import { Database, LogRecord } from "./types";
-import { findHttpSubscriptions } from "./httpSubscriptionStore";
+import { Database, Stream } from "./types";
+import { findHttpSubscribers } from "./httpSubscriberStore";
 
-export async function notifySubscriptions(
+export async function notifySubscribers(
 	db: Kysely<Database>,
-	logRecord: LogRecord
+	stream: Stream
 ): Promise<void> {
 	await db.transaction().execute(async (trx) => {
-		const subscriptions = await findHttpSubscriptions(trx, {});
+		const subscriptions = await findHttpSubscribers(trx, {});
 		console.log(subscriptions);
 		for (const subscription of subscriptions) {
 			// non-blocking
-			notifySubscriptionUrl(subscription.url, logRecord);
+			notifySubscriberUrl(subscription.url, stream);
 		}
 	});
 }
 
-export async function notifySubscriptionUrl(
+export async function notifySubscriberUrl(
 	url: string,
-	logRecord: LogRecord
+	stream: Stream
 ): Promise<void> {
 	try {
 		await fetch(url, {
@@ -27,7 +27,7 @@ export async function notifySubscriptionUrl(
 				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({
-				logRecord,
+				stream,
 			}),
 		});
 	} catch (e) {

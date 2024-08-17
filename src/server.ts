@@ -3,16 +3,16 @@ import express from "express";
 import { env } from "process";
 import { db } from "./database";
 import {
-	createLogRecord,
-	findLogRecordsGreaterThanLogRecordId,
-	getMostRecentLogRecord,
-} from "./logRecordStore";
+	createStream,
+	findStreamsGreaterThanStreamId,
+	getMostRecentStream,
+} from "./stream";
 import {
-	createHttpSubscription,
-	deleteHttpSubscription,
-	findHttpSubscriptions,
-} from "./httpSubscriptionStore";
-import { notifySubscriptions } from "./notifications";
+	createHttpSubscriber,
+	deleteHttpSubscriber,
+	findHttpSubscribers,
+} from "./httpSubscriberStore";
+import { notifySubscribers } from "./subscriber";
 
 // Create an Express application
 const app = express();
@@ -30,7 +30,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/fencingToken", async (req, res) => {
-	const result = await createLogRecord({
+	const result = await createStream({
 		data: JSON.stringify({ type: "fencing-token-requested" }),
 	});
 	if (result === undefined) {
@@ -41,50 +41,50 @@ app.get("/fencingToken", async (req, res) => {
 	});
 });
 
-app.post("/logRecord", async (req, res) => {
+app.post("/stream", async (req, res) => {
 	const insertData = {
 		data: JSON.stringify(req.body.data),
 	};
-	const result = await createLogRecord(insertData);
+	const result = await createStream(insertData);
 	if (result === undefined) {
 		return res.status(500).send();
 	}
 	// non-blocking
-	notifySubscriptions(db, result);
+	notifySubscribers(db, result);
 	return res.status(201).send();
 });
 
-app.get("/logRecord", async (req, res) => {
+app.get("/stream", async (req, res) => {
 	// Get the query parameter 'afterId' from the request
 	const afterId = Number(req.query.afterId);
 	// Find all log records with an ID greater than 'afterId'
-	const records = await findLogRecordsGreaterThanLogRecordId(afterId);
+	const records = await findStreamsGreaterThanStreamId(afterId);
 	// Send the records to the client
 	return res.json(records);
 });
 
-app.post("/httpSubscription/register", async (req, res) => {
+app.post("/httpSubscriber/register", async (req, res) => {
 	await db.transaction().execute(async (trx) => {
-		const existing = await findHttpSubscriptions(trx, {
+		const existing = await findHttpSubscribers(trx, {
 			url: req.body.url,
 		});
 		if (existing.length > 0) {
 			return res.status(200).send();
 		}
-		const result = createHttpSubscription(trx, req.body);
+		const result = createHttpSubscriber(trx, req.body);
 		return res.status(201).send();
 	});
 });
 
-app.post("/httpSubscription/unregister", async (req, res) => {
+app.post("/httpSubscriber/unregister", async (req, res) => {
 	await db.transaction().execute(async (trx) => {
-		const existing = await findHttpSubscriptions(trx, {
+		const existing = await findHttpSubscribers(trx, {
 			url: req.body.url,
 		});
 		if (existing.length > 0) {
 			// delete
 			for (const subscription of existing) {
-				await deleteHttpSubscription(trx, subscription.id);
+				await deleteHttpSubscriber(trx, subscription.id);
 			}
 			return res.status(200).send();
 		}
@@ -100,10 +100,10 @@ app.listen(port, () => {
 
 // Get the most recent log record and notify subscribers
 (async () => {
-	const record = await getMostRecentLogRecord();
+	const record = await getMostRecentStream();
 	if (record === undefined) {
 		return;
 	}
 	// non-blocking
-	notifySubscriptions(db, record);
+	notifySubscribers(db, record);
 })();

@@ -19,7 +19,6 @@ const app = express();
 
 // Set the port number for the server
 const port = 80;
-console.log(env.LIKER_EVENT_LOG_DB_HOSTNAME);
 
 app.use(express.json());
 

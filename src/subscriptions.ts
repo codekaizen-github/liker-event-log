@@ -8,7 +8,6 @@ export async function notifySubscribers(
 ): Promise<void> {
 	await db.transaction().execute(async (trx) => {
 		const subscriptions = await findHttpSubscribers(trx, {});
-		console.log(subscriptions);
 		for (const subscription of subscriptions) {
 			// non-blocking
 			notifySubscriberUrl(subscription.url, stream);

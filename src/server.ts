@@ -6,13 +6,13 @@ import {
 	createStream,
 	findStreamsGreaterThanStreamId,
 	getMostRecentStream,
-} from "./stream";
+} from "./streamStore";
 import {
 	createHttpSubscriber,
 	deleteHttpSubscriber,
 	findHttpSubscribers,
 } from "./httpSubscriberStore";
-import { notifySubscribers } from "./subscriber";
+import { notifySubscribers } from "./subscriptions";
 
 // Create an Express application
 const app = express();

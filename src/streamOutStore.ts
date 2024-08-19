@@ -28,7 +28,7 @@ export async function findStreamOutsGreaterThanStreamOutId(
 	trx: Transaction<Database>,
 	id: number
 ) {
-	let query = trx.selectFrom("streamOut").where("id", ">", id);
+	let query = trx.selectFrom("streamOut").where("id", ">", id).orderBy("id", "asc");
 	return await query.selectAll().execute();
 }
 

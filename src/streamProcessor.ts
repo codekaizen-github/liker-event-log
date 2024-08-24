@@ -1,11 +1,11 @@
 import { createStreamOutFromStreamEvent } from './streamOutStore';
 import { notifySubscribers } from './subscriptions';
-import { Database, StreamEvent } from './types';
+import { Database, NewStreamEvent } from './types';
 import { Transaction } from 'kysely';
 
 export async function processStreamEvent(
     trx: Transaction<Database>,
-    newStreamEvent: StreamEvent
+    newStreamEvent: NewStreamEvent
 ) {
     const streamOut = await createStreamOutFromStreamEvent(trx, newStreamEvent);
     if (streamOut === undefined) {

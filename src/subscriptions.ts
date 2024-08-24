@@ -1,5 +1,5 @@
-import { Kysely, Transaction } from 'kysely';
-import { Database, StreamEvent, StreamOut } from './types';
+import { Transaction } from 'kysely';
+import { Database, NewStreamEvent, StreamOut } from './types';
 import { findHttpSubscribers } from './httpSubscriberStore';
 import { processStreamEvent } from './streamProcessor';
 
@@ -52,7 +52,7 @@ export async function subscribe(
 
 export async function processStreamEventInTotalOrder(
     trx: Transaction<Database>,
-    newStreamEvent: StreamEvent
+    newStreamEvent: NewStreamEvent
 ): Promise<void> {
     await processStreamEvent(trx, newStreamEvent);
 }

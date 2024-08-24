@@ -4,7 +4,7 @@ import {
     StreamOut,
     NewStreamOut,
     Database,
-    StreamEvent,
+    NewStreamEvent,
 } from './types';
 
 export async function findStreamOutById(
@@ -63,7 +63,7 @@ export async function updateStreamOut(
 }
 export async function createStreamOutFromStreamEvent(
     trx: Transaction<Database>,
-    streamEvent: StreamEvent
+    streamEvent: NewStreamEvent
 ) {
     return await createStreamOut(trx, {
         ...streamEvent,

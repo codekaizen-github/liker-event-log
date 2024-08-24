@@ -5,6 +5,7 @@ import {
     NewStreamOut,
     Database,
     NewStreamEvent,
+    OrderedStreamEvent,
 } from './types';
 
 export async function findStreamOutById(
@@ -61,14 +62,20 @@ export async function updateStreamOut(
         .where('id', '=', id)
         .execute();
 }
+
 export async function createStreamOutFromStreamEvent(
     trx: Transaction<Database>,
-    streamEvent: NewStreamEvent
+    streamEvent: NewStreamEvent | OrderedStreamEvent
 ) {
-    return await createStreamOut(trx, {
+    const streamOut = await createStreamOut(trx, {
         ...streamEvent,
+        id: undefined,
         data: JSON.stringify(streamEvent.data),
     });
+    if (streamOut === undefined) {
+        return undefined;
+    }
+    return streamOut;
 }
 
 export async function createStreamOut(

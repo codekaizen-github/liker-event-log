@@ -11,5 +11,6 @@ export async function processStreamEvent(
     if (streamOut === undefined) {
         throw new Error('Failed to create stream out');
     }
+    console.log({ streamOut });
     notifySubscribers(trx, streamOut);
 }

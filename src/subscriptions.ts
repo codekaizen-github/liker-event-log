@@ -1,11 +1,11 @@
 import { Transaction } from 'kysely';
-import { Database, NewStreamEvent, StreamOut } from './types';
+import { Database, NewStreamEvent, OrderedStreamEvent, StreamOut } from './types';
 import { findHttpSubscribers } from './httpSubscriberStore';
 import { processStreamEvent } from './streamProcessor';
 
 export async function notifySubscribers(
     trx: Transaction<Database>,
-    streamOut: StreamOut
+    streamOut: OrderedStreamEvent
 ): Promise<void> {
     const subscriptions = await findHttpSubscribers(trx, {});
     for (const subscription of subscriptions) {
@@ -16,7 +16,7 @@ export async function notifySubscribers(
 
 export async function notifySubscriberUrl(
     url: string,
-    streamOut: StreamOut
+    streamOut: OrderedStreamEvent
 ): Promise<void> {
     try {
         await fetch(url, {

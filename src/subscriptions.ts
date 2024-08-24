@@ -1,19 +1,17 @@
 import { Kysely, Transaction } from 'kysely';
-import { Database, StreamOut } from './types';
+import { Database, StreamEvent, StreamOut } from './types';
 import { findHttpSubscribers } from './httpSubscriberStore';
 import { processStreamEvent } from './streamProcessor';
 
 export async function notifySubscribers(
-    db: Kysely<Database>,
+    trx: Transaction<Database>,
     streamOut: StreamOut
 ): Promise<void> {
-    await db.transaction().execute(async (trx) => {
-        const subscriptions = await findHttpSubscribers(trx, {});
-        for (const subscription of subscriptions) {
-            // non-blocking
-            notifySubscriberUrl(subscription.url, streamOut);
-        }
-    });
+    const subscriptions = await findHttpSubscribers(trx, {});
+    for (const subscription of subscriptions) {
+        // non-blocking
+        notifySubscriberUrl(subscription.url, streamOut);
+    }
 }
 
 export async function notifySubscriberUrl(
@@ -53,15 +51,8 @@ export async function subscribe(
 }
 
 export async function processStreamEventInTotalOrder(
-    newStreamEvent: { id: number; data: string },
-    db: Kysely<Database>,
-    trx: Transaction<Database>
+    trx: Transaction<Database>,
+    newStreamEvent: StreamEvent
 ): Promise<void> {
-    await processStreamEvent(
-        {
-            data: JSON.stringify(newStreamEvent.data),
-        },
-        db,
-        trx
-    );
+    await processStreamEvent(trx, newStreamEvent);
 }

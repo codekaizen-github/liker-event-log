@@ -1,5 +1,10 @@
 import { Generated, Insertable, Selectable, Updateable } from "kysely";
 
+export interface StreamEvent {
+	id?: number;
+	data: any;
+}
+
 export interface Database {
 	streamOut: StreamOutTable;
 	httpSubscriber: HttpSubscriberTable;

@@ -2,7 +2,7 @@
 import express from 'express';
 import { db } from './database';
 import {
-    createStreamOut,
+    createStreamOutFromStreamEvent,
     findStreamOutsGreaterThanStreamOutId,
     getMostRecentStreamOut,
 } from './streamOutStore';
@@ -11,7 +11,10 @@ import {
     deleteHttpSubscriber,
     findHttpSubscribers,
 } from './httpSubscriberStore';
-import { notifySubscribers } from './subscriptions';
+import {
+    notifySubscribers,
+    processStreamEventInTotalOrder,
+} from './subscriptions';
 
 // Create an Express application
 const app = express();
@@ -28,75 +31,87 @@ app.get('/', (req, res) => {
 });
 
 app.get('/fencingToken', async (req, res) => {
-    await db.transaction().setIsolationLevel('serializable').execute(async (trx) => {
-        const result = await createStreamOut(trx, {
-            data: JSON.stringify({ type: 'fencing-token-requested' }),
+    await db
+        .transaction()
+        .setIsolationLevel('serializable')
+        .execute(async (trx) => {
+            const result = await createStreamOutFromStreamEvent(trx, {
+                data: { type: 'fencing-token-requested' },
+            });
+            if (result === undefined) {
+                return res.status(500).send();
+            }
+            return res.json({
+                fencingToken: result.id,
+            });
         });
-        if (result === undefined) {
-            return res.status(500).send();
-        }
-        return res.json({
-            fencingToken: result.id,
-        });
-    });
 });
 
 app.post('/streamIn', async (req, res) => {
-    await db.transaction().setIsolationLevel('serializable').execute(async (trx) => {
-        const insertData = {
-            data: JSON.stringify(req.body.data),
-        };
-        const result = await createStreamOut(trx, insertData);
-        if (result === undefined) {
-            return res.status(500).send();
-        }
-        // non-blocking
-        notifySubscribers(db, result);
-        return res.status(201).send();
-    });
+    await db
+        .transaction()
+        .setIsolationLevel('serializable')
+        .execute(async (trx) => {
+            try {
+                await processStreamEventInTotalOrder(trx, req.body);
+            } catch (e) {
+                console.error(e);
+                return res.status(500).send();
+            }
+            return res.status(201).send();
+        });
 });
 
 app.get('/streamOut', async (req, res) => {
     // Get the query parameter 'afterId' from the request
     const afterId = Number(req.query.afterId);
-    await db.transaction().setIsolationLevel('serializable').execute(async (trx) => {
-        const records = await findStreamOutsGreaterThanStreamOutId(
-            trx,
-            afterId
-        );
-        return res.json(records);
-    });
+    await db
+        .transaction()
+        .setIsolationLevel('serializable')
+        .execute(async (trx) => {
+            const records = await findStreamOutsGreaterThanStreamOutId(
+                trx,
+                afterId
+            );
+            return res.json(records);
+        });
     // Find all log records with an ID greater than 'afterId'
     // Send the records to the client
 });
 
 app.post('/httpSubscriber/register', async (req, res) => {
-    await db.transaction().setIsolationLevel('serializable').execute(async (trx) => {
-        const existing = await findHttpSubscribers(trx, {
-            url: req.body.url,
+    await db
+        .transaction()
+        .setIsolationLevel('serializable')
+        .execute(async (trx) => {
+            const existing = await findHttpSubscribers(trx, {
+                url: req.body.url,
+            });
+            if (existing.length > 0) {
+                return res.status(200).send();
+            }
+            const result = createHttpSubscriber(trx, req.body);
+            return res.status(201).send();
         });
-        if (existing.length > 0) {
-            return res.status(200).send();
-        }
-        const result = createHttpSubscriber(trx, req.body);
-        return res.status(201).send();
-    });
 });
 
 app.post('/httpSubscriber/unregister', async (req, res) => {
-    await db.transaction().setIsolationLevel('serializable').execute(async (trx) => {
-        const existing = await findHttpSubscribers(trx, {
-            url: req.body.url,
-        });
-        if (existing.length > 0) {
-            // delete
-            for (const subscription of existing) {
-                await deleteHttpSubscriber(trx, subscription.id);
+    await db
+        .transaction()
+        .setIsolationLevel('serializable')
+        .execute(async (trx) => {
+            const existing = await findHttpSubscribers(trx, {
+                url: req.body.url,
+            });
+            if (existing.length > 0) {
+                // delete
+                for (const subscription of existing) {
+                    await deleteHttpSubscriber(trx, subscription.id);
+                }
+                return res.status(200).send();
             }
-            return res.status(200).send();
-        }
-        return res.status(404).send();
-    });
+            return res.status(404).send();
+        });
 });
 
 // Start the server and listen on the specified port
@@ -107,12 +122,15 @@ app.listen(port, () => {
 
 // Get the most recent log record and notify subscribers
 (async () => {
-    await db.transaction().setIsolationLevel('serializable').execute(async (trx) => {
-        const record = await getMostRecentStreamOut(trx);
-        if (record === undefined) {
-            return;
-        }
-        // non-blocking
-        notifySubscribers(db, record);
-    });
+    await db
+        .transaction()
+        .setIsolationLevel('serializable')
+        .execute(async (trx) => {
+            const record = await getMostRecentStreamOut(trx);
+            if (record === undefined) {
+                return;
+            }
+            // non-blocking
+            notifySubscribers(trx, record);
+        });
 })();

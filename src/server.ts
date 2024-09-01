@@ -15,6 +15,7 @@ import {
     notifySubscribers,
     processStreamEventInTotalOrder,
 } from './subscriptions';
+import cors from 'cors';
 
 // Create an Express application
 const app = express();
@@ -22,6 +23,9 @@ const app = express();
 // Set the port number for the server
 const port = 80;
 
+app.use(cors({
+    origin: '*',
+}));
 app.use(express.json());
 
 // Define a route for the root path ('/')

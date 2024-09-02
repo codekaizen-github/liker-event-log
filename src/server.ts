@@ -3,7 +3,7 @@ import express from 'express';
 import { db } from './database';
 import {
     createStreamOutFromStreamEvent,
-    findStreamOutsGreaterThanStreamOutId,
+    findStreamOutsGreaterThanStreamId,
 } from './streamOutStore';
 import {
     createHttpSubscriber,
@@ -68,7 +68,7 @@ app.get('/streamOut', async (req, res) => {
         .transaction()
         .setIsolationLevel('serializable')
         .execute(async (trx) => {
-            const records = await findStreamOutsGreaterThanStreamOutId(
+            const records = await findStreamOutsGreaterThanStreamId(
                 trx,
                 afterId
             );

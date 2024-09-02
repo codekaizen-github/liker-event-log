@@ -32,7 +32,7 @@ export async function findStreamOuts(
     return await query.selectAll().execute();
 }
 
-export async function findStreamOutsGreaterThanStreamOutId(
+export async function findStreamOutsGreaterThanStreamId(
     trx: Transaction<Database>,
     id: number
 ) {

@@ -16,6 +16,7 @@ import {
     processStreamEventInTotalOrder,
 } from './subscriptions';
 import cors from 'cors';
+import onEvent from './transmissionControl/onEvent';
 
 // Create an Express application
 const app = express();
@@ -52,18 +53,13 @@ app.get('/fencingToken', async (req, res) => {
 });
 
 app.post('/streamIn', async (req, res) => {
-    await db
-        .transaction()
-        .setIsolationLevel('serializable')
-        .execute(async (trx) => {
-            try {
-                await processStreamEventInTotalOrder(trx, req.body);
-            } catch (e) {
-                console.error(e);
-                return res.status(500).send();
-            }
-            return res.status(201).send();
-        });
+    try {
+        await onEvent(req.body);
+    } catch (e) {
+        console.error(e);
+        return res.status(500).send();
+    }
+    return res.status(201).send();
 });
 
 app.get('/streamOut', async (req, res) => {

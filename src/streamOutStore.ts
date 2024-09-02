@@ -70,7 +70,6 @@ export async function createStreamOutFromStreamEvent(
     const streamOut = await createStreamOut(trx, {
         ...streamEvent,
         id: undefined,
-        data: JSON.stringify(streamEvent.data),
     });
     if (streamOut === undefined) {
         return undefined;
@@ -84,10 +83,16 @@ export async function createStreamOut(
 ) {
     const { insertId } = await trx
         .insertInto('streamOut')
-        .values(streamOut)
+        .values({
+            ...streamOut,
+            data: JSON.stringify(streamOut.data),
+        })
         .executeTakeFirstOrThrow();
-
-    return await findStreamOutById(trx, Number(insertId!));
+        const streamOutResult = await findStreamOutById(trx, Number(insertId));
+        if (streamOutResult === undefined) {
+            throw new Error('Failed to create stream out');
+        }
+        return streamOutResult;
 }
 
 export async function deleteStreamOut(trx: Transaction<Database>, id: number) {

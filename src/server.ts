@@ -11,12 +11,9 @@ import {
     deleteHttpSubscriber,
     findHttpSubscribers,
 } from './httpSubscriberStore';
-import {
-    notifySubscribers,
-    processStreamEventInTotalOrder,
-} from './subscriptions';
 import cors from 'cors';
 import onEvent from './transmissionControl/onEvent';
+import { notifySubscribers } from './transmissionControl/notifySubscribers';
 
 // Create an Express application
 const app = express();
@@ -24,9 +21,11 @@ const app = express();
 // Set the port number for the server
 const port = 80;
 
-app.use(cors({
-    origin: '*',
-}));
+app.use(
+    cors({
+        origin: '*',
+    })
+);
 app.use(express.json());
 
 // Define a route for the root path ('/')
@@ -122,15 +121,16 @@ app.listen(port, () => {
 
 // Get the most recent log record and notify subscribers
 (async () => {
-    await db
+    const result = await db
         .transaction()
         .setIsolationLevel('serializable')
         .execute(async (trx) => {
             const record = await getMostRecentStreamOut(trx);
-            if (record === undefined) {
-                return;
-            }
-            // non-blocking
-            notifySubscribers(trx, record);
+            return record;
         });
+    if (result === undefined) {
+        return;
+    }
+    // non-blocking
+    notifySubscribers(result);
 })();

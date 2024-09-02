@@ -4,7 +4,6 @@ import { db } from './database';
 import {
     createStreamOutFromStreamEvent,
     findStreamOutsGreaterThanStreamOutId,
-    getMostRecentStreamOut,
 } from './streamOutStore';
 import {
     createHttpSubscriber,
@@ -14,6 +13,7 @@ import {
 import cors from 'cors';
 import onEvent from './transmissionControl/onEvent';
 import { notifySubscribers } from './transmissionControl/notifySubscribers';
+import { getMostRecentTotallyOrderedStreamEvent } from './getMostRecentTotallyOrderedStreamEvent';
 
 // Create an Express application
 const app = express();
@@ -121,13 +121,7 @@ app.listen(port, () => {
 
 // Get the most recent log record and notify subscribers
 (async () => {
-    const result = await db
-        .transaction()
-        .setIsolationLevel('serializable')
-        .execute(async (trx) => {
-            const record = await getMostRecentStreamOut(trx);
-            return record;
-        });
+    const result = await getMostRecentTotallyOrderedStreamEvent();
     if (result === undefined) {
         return;
     }

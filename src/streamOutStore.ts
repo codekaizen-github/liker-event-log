@@ -7,6 +7,7 @@ import {
     NewStreamEvent,
     OrderedStreamEvent,
 } from './types';
+import { TotallyOrderedStreamEvent } from './transmissionControl/types';
 
 export async function findStreamOutById(
     trx: Transaction<Database>,
@@ -88,11 +89,11 @@ export async function createStreamOut(
             data: JSON.stringify(streamOut.data),
         })
         .executeTakeFirstOrThrow();
-        const streamOutResult = await findStreamOutById(trx, Number(insertId));
-        if (streamOutResult === undefined) {
-            throw new Error('Failed to create stream out');
-        }
-        return streamOutResult;
+    const streamOutResult = await findStreamOutById(trx, Number(insertId));
+    if (streamOutResult === undefined) {
+        throw new Error('Failed to create stream out');
+    }
+    return streamOutResult;
 }
 
 export async function deleteStreamOut(trx: Transaction<Database>, id: number) {

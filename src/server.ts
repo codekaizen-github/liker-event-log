@@ -4,6 +4,7 @@ import { db } from './database';
 import {
     createStreamOutFromStreamEvent,
     findStreamOutsGreaterThanStreamId,
+    findTotallyOrderedStreamEventsGreaterThanStreamId,
 } from './streamOutStore';
 import {
     createHttpSubscriber,
@@ -68,10 +69,11 @@ app.get('/streamOut', async (req, res) => {
         .transaction()
         .setIsolationLevel('serializable')
         .execute(async (trx) => {
-            const records = await findStreamOutsGreaterThanStreamId(
-                trx,
-                afterId
-            );
+            const records =
+                await findTotallyOrderedStreamEventsGreaterThanStreamId(
+                    trx,
+                    afterId
+                );
             return res.json(records);
         });
     // Find all log records with an ID greater than 'afterId'

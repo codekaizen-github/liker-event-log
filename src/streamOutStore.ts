@@ -32,6 +32,23 @@ export async function findStreamOuts(
     return await query.selectAll().execute();
 }
 
+export async function findTotallyOrderedStreamEventsGreaterThanStreamId(
+    trx: Transaction<Database>,
+    id: number
+): Promise<TotallyOrderedStreamEvent[]> {
+    let query = trx
+        .selectFrom('streamOut')
+        .where('id', '>', id)
+        .orderBy('id', 'asc');
+    const queryResults = await query.selectAll().execute();
+    return queryResults.map((result) => {
+        return {
+            ...result,
+            totalOrderId: result.id,
+        };
+    });
+}
+
 export async function findStreamOutsGreaterThanStreamId(
     trx: Transaction<Database>,
     id: number

@@ -7,7 +7,11 @@ import {
     NewStreamEvent,
     OrderedStreamEvent,
 } from './types';
-import { TotallyOrderedStreamEvent } from './transmissionControl/types';
+import {
+    NewNotYetTotallyOrderedStreamEvent,
+    NewTotallyOrderedStreamEvent,
+    TotallyOrderedStreamEvent,
+} from './transmissionControl/types';
 
 export async function findStreamOutById(
     trx: Transaction<Database>,
@@ -83,7 +87,7 @@ export async function updateStreamOut(
 
 export async function createStreamOutFromStreamEvent(
     trx: Transaction<Database>,
-    streamEvent: NewStreamEvent | OrderedStreamEvent
+    streamEvent: NewNotYetTotallyOrderedStreamEvent
 ) {
     const streamOut = await createStreamOut(trx, {
         ...streamEvent,

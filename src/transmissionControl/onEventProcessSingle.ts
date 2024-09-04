@@ -1,8 +1,10 @@
 import { db } from '../database';
 import { processStreamEvent } from './processStreamEvent';
-import { TotallyOrderedStreamEvent } from './types';
+import { NewNotYetTotallyOrderedStreamEvent } from './types';
 
-export async function onEventProcessSingle(event: TotallyOrderedStreamEvent) {
+export async function onEventProcessSingle(
+    event: NewNotYetTotallyOrderedStreamEvent
+) {
     const results = await db
         .transaction()
         .setIsolationLevel('serializable')

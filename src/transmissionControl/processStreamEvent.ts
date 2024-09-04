@@ -1,6 +1,6 @@
 import { Transaction } from 'kysely';
 import {
-    NewTotallyOrderedStreamEvent,
+    NewNotYetTotallyOrderedStreamEvent,
     TotallyOrderedStreamEvent,
 } from './types';
 import { Database } from '../types';
@@ -8,12 +8,12 @@ import { createTotallyOrderedStreamEvent } from '../createTotallyOrderedStreamEv
 
 export async function processStreamEvent(
     trx: Transaction<Database>,
-    newTotallyOrderedStreamEvent: NewTotallyOrderedStreamEvent
+    newNotYetTotallyOrderedStreamEvent: NewNotYetTotallyOrderedStreamEvent
 ): Promise<TotallyOrderedStreamEvent[]> {
     const results: TotallyOrderedStreamEvent[] = [];
     const streamOut = await createTotallyOrderedStreamEvent(
         trx,
-        newTotallyOrderedStreamEvent
+        newNotYetTotallyOrderedStreamEvent
     );
     if (streamOut === undefined) {
         throw new Error('Failed to create stream out');

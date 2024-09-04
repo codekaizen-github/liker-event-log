@@ -12,7 +12,7 @@ export async function handleNotifyingSubscribers(
         // non-blocking
         console.log('notifying:', {
             url: subscription.url,
-            streamOut: JSON.stringify(streamOut)
+            streamOut: JSON.stringify(streamOut),
         });
         notifySubscriberUrl(subscription.url, streamOut);
     }
@@ -22,6 +22,7 @@ export async function notifySubscriberUrl(
     url: string,
     streamOut: TotallyOrderedStreamEvent
 ): Promise<void> {
+    console.log('notifying subscriber:', { streamOut });
     try {
         await fetch(url, {
             method: 'POST',

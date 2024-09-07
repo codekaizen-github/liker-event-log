@@ -6,19 +6,21 @@ import {
     TotallyOrderedStreamEvent,
 } from './transmissionControl/types';
 
-export async function createTotallyOrderedStreamEvent(
+export async function createTotallyOrderedStreamEvents(
     trx: Transaction<Database>,
     streamEvent: NewNotYetTotallyOrderedStreamEvent
-): Promise<TotallyOrderedStreamEvent> {
+): Promise<TotallyOrderedStreamEvent[]> {
+    const results: TotallyOrderedStreamEvent[] = [];
     const streamOut = await createStreamOutFromStreamEvent(trx, {
         data: streamEvent.data,
     });
     if (streamOut === undefined) {
         throw new Error('Failed to create stream out');
     }
-    return {
+    results.push({
         id: streamOut.id,
         totalOrderId: streamOut.id,
         data: streamOut.data,
-    };
+    });
+    return results;
 }

@@ -59,7 +59,7 @@ export async function findTotallyOrderedStreamEvents(
     if (offset !== undefined) {
         query = query.offset(offset);
     }
-    const queryResults = await query.selectAll().execute();
+    const queryResults = await query.selectAll().orderBy('id', 'asc').execute();
     return queryResults.map((result) => {
         return {
             ...result,

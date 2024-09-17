@@ -1,15 +1,26 @@
 import { db } from '../database';
 import { processStreamEvent } from './processStreamEvent';
-import { NewNotYetTotallyOrderedStreamEvent } from './types';
+import {
+    NewNotYetTotallyOrderedStreamEvent,
+    TotallyOrderedStreamEvent,
+} from './types';
 
 export async function onEventProcessSingle(
-    event: NewNotYetTotallyOrderedStreamEvent[]
+    events: NewNotYetTotallyOrderedStreamEvent[]
 ) {
-    const results = await db
+    const results: TotallyOrderedStreamEvent[] = [];
+    await db
         .transaction()
         .setIsolationLevel('serializable')
         .execute(async (trx) => {
-            return await processStreamEvent(trx, event);
+            const eachResults: TotallyOrderedStreamEvent[] = [];
+            for (const event of events) {
+                if (event.data === undefined) {
+                    throw new Error('Data is required');
+                }
+                eachResults.push(...(await processStreamEvent(trx, event)));
+            }
+            results.push(...eachResults);
         });
     return results;
 }

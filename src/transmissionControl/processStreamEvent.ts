@@ -8,14 +8,7 @@ import { createTotallyOrderedStreamEvents } from '../createTotallyOrderedStreamE
 
 export async function processStreamEvent(
     trx: Transaction<Database>,
-    newNotYetTotallyOrderedStreamEvent: NewNotYetTotallyOrderedStreamEvent[]
+    event: NewNotYetTotallyOrderedStreamEvent
 ): Promise<TotallyOrderedStreamEvent[]> {
-    const results: TotallyOrderedStreamEvent[] = [];
-    for (const event of newNotYetTotallyOrderedStreamEvent) {
-        if (event.data === undefined) {
-            throw new Error('Data is required');
-        }
-        results.push(...(await createTotallyOrderedStreamEvents(trx, event)));
-    }
-    return results;
+    return await createTotallyOrderedStreamEvents(trx, event);
 }

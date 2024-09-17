@@ -3,7 +3,7 @@ import { processStreamEvent } from './processStreamEvent';
 import { NewNotYetTotallyOrderedStreamEvent } from './types';
 
 export async function onEventProcessSingle(
-    event: NewNotYetTotallyOrderedStreamEvent
+    event: NewNotYetTotallyOrderedStreamEvent[]
 ) {
     const results = await db
         .transaction()

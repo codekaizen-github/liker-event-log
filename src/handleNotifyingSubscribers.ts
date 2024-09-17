@@ -3,7 +3,7 @@ import { TotallyOrderedStreamEvent } from './transmissionControl/types';
 import { db } from './database';
 
 export async function handleNotifyingSubscribers(
-    streamOut: TotallyOrderedStreamEvent
+    streamOut: TotallyOrderedStreamEvent[]
 ): Promise<void> {
     const subscriptions = await db.transaction().execute(async (trx) => {
         return await findHttpSubscribers(trx, {});
@@ -20,7 +20,7 @@ export async function handleNotifyingSubscribers(
 
 export async function notifySubscriberUrl(
     url: string,
-    streamOut: TotallyOrderedStreamEvent
+    streamOut: TotallyOrderedStreamEvent[]
 ): Promise<void> {
     console.log('notifying subscriber:', { streamOut });
     try {

@@ -107,6 +107,18 @@ export async function getMostRecentStreamOut(trx: Transaction<Database>) {
         .executeTakeFirst();
 }
 
+export async function getMostRecentStreamOutsWithSameTotalOrderId(
+    trx: Transaction<Database>
+) {
+    const results = await trx
+        .selectFrom('streamOut')
+        .orderBy('id', 'desc')
+        .limit(1)
+        .selectAll()
+        .executeTakeFirst();
+    return results === undefined ? [] : [results];
+}
+
 export async function updateStreamOut(
     trx: Transaction<Database>,
     id: number,

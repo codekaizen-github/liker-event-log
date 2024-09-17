@@ -52,6 +52,9 @@ app.get('/fencingToken', async (req, res) => {
 });
 
 app.post('/streamIn', async (req, res) => {
+    if (!Array.isArray(req.body)) {
+        return res.status(400).send();
+    }
     try {
         await onEvent(req.body);
     } catch (e) {

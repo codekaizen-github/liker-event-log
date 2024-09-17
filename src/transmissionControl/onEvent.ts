@@ -3,7 +3,7 @@ import { onEventProcessSingle } from './onEventProcessSingle';
 import { NewNotYetTotallyOrderedStreamEvent } from './types';
 
 export default async function onEvent(
-    event: NewNotYetTotallyOrderedStreamEvent
+    event: NewNotYetTotallyOrderedStreamEvent[]
 ) {
     // Random delay
     await new Promise((resolve) => setTimeout(resolve, Math.random() * 1000));
@@ -11,9 +11,7 @@ export default async function onEvent(
     try {
         const results = await onEventProcessSingle(event);
         if (results.length) {
-            for (const result of results) {
-                notifySubscribers(result);
-            }
+            notifySubscribers(results);
         }
     } catch (e) {
         console.error(e);

@@ -1,18 +1,19 @@
 import { db } from './database';
-import { getMostRecentStreamOut } from './streamOutStore';
+import { getMostRecentStreamOutsWithSameTotalOrderId } from './streamOutStore';
 import { TotallyOrderedStreamEvent } from './transmissionControl/types';
 
 export async function getMostRecentTotallyOrderedStreamEvent(): Promise<
-    TotallyOrderedStreamEvent | undefined
+    TotallyOrderedStreamEvent[] | undefined
 > {
     return db.transaction().execute(async (trx) => {
-        const streamOut = await getMostRecentStreamOut(trx);
-        if (streamOut === undefined) {
-            return undefined;
-        }
-        return {
-            ...streamOut,
-            totalOrderId: streamOut.id,
-        };
+        const streamOuts = await getMostRecentStreamOutsWithSameTotalOrderId(
+            trx
+        );
+        return streamOuts.map((streamOut) => {
+            return {
+                ...streamOut,
+                totalOrderId: streamOut.id,
+            };
+        });
     });
 }

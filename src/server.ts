@@ -96,7 +96,12 @@ app.get('/streamOut', async (req, res) => {
             const totalOrderId = mostRecent ? mostRecent.id : 0;
             return res.json({
                 totalOrderId,
-                events,
+                events: events.map((event) => {
+                    return {
+                        ...event,
+                        streamId: event.id,
+                    };
+                }),
             });
         });
     // Find all log records with an ID greater than 'afterId'

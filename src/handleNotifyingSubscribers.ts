@@ -21,10 +21,10 @@ export async function handleNotifyingSubscribers(
 
 export async function notifySubscriberUrl(
     url: string,
-    streamOut: TotallyOrderedStreamEvent[],
+    events: TotallyOrderedStreamEvent[],
     totalOrderId: number
 ): Promise<void> {
-    console.log('notifying subscriber:', { streamOut });
+    console.log('notifying subscriber:', { events });
     try {
         await fetch(url, {
             method: 'POST',
@@ -33,7 +33,12 @@ export async function notifySubscriberUrl(
             },
             body: JSON.stringify({
                 totalOrderId,
-                events: streamOut,
+                events: events.map((event) => {
+                    return {
+                        ...event,
+                        streamId: event.id,
+                    };
+                }),
             }),
         });
     } catch (e) {

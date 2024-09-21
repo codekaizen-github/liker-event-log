@@ -33,12 +33,7 @@ export async function notifySubscriberUrl(
             },
             body: JSON.stringify({
                 totalOrderId,
-                events: events.map((event) => {
-                    return {
-                        ...event,
-                        streamId: event.id,
-                    };
-                }),
+                events: events,
             }),
         });
     } catch (e) {

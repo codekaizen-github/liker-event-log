@@ -15,6 +15,12 @@ import cors from 'cors';
 import onEvent from './transmissionControl/onEvent';
 import { notifySubscribers } from './transmissionControl/notifySubscribers';
 import { getMostRecentTotallyOrderedStreamEvents } from './getMostRecentTotallyOrderedStreamEvents';
+import {
+    getStreamOutIncrementorForUpdate,
+    insertIntoIgnoreStreamOutIncrementor,
+    updateStreamOutIncrementor,
+} from './streamOutIncrementorStore';
+import { onEventProcess } from './transmissionControl/onEventProcess';
 
 // Create an Express application
 const app = express();
@@ -40,15 +46,12 @@ app.get('/fencingToken', async (req, res) => {
         .transaction()
         .setIsolationLevel('serializable')
         .execute(async (trx) => {
-            const result = await createStreamOutFromStreamEvent(trx, {
-                data: { type: 'fencing-token-requested' },
-            });
-            if (result === undefined) {
-                return res.status(500).send();
-            }
-            return res.json({
-                fencingToken: result.id,
-            });
+            const streamOuts = await onEventProcess([
+                { data: { type: 'fencing-token-requested' } },
+            ]);
+            const streamOut = streamOuts[0];
+            notifySubscribers(streamOuts, streamOut.totalOrderId);
+            return res.json({ fecingToken: streamOut.totalOrderId });
         });
 });
 
@@ -96,12 +99,7 @@ app.get('/streamOut', async (req, res) => {
             const totalOrderId = mostRecent ? mostRecent.id : 0;
             return res.json({
                 totalOrderId,
-                events: events.map((event) => {
-                    return {
-                        ...event,
-                        streamId: event.id,
-                    };
-                }),
+                events: events,
             });
         });
     // Find all log records with an ID greater than 'afterId'

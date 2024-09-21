@@ -11,6 +11,7 @@ export interface OrderedStreamEvent {
 
 export interface Database {
     streamOut: StreamOutTable;
+    streamOutIncrementor: StreamOutIncrementorTable;
     httpSubscriber: HttpSubscriberTable;
 }
 
@@ -20,6 +21,8 @@ export interface Database {
 // `NewPerson` and `PersonUpdate` types below.
 export interface StreamOutTable {
     id: Generated<number>;
+    streamId: number;
+    totalOrderId: number;
     data: any;
 }
 
@@ -30,6 +33,15 @@ export interface StreamOutTableSerialized extends StreamOutTable {
 export type StreamOut = Selectable<StreamOutTable>;
 export type NewStreamOut = Insertable<StreamOutTableSerialized>;
 export type StreamOutUpdate = Updateable<StreamOutTableSerialized>;
+
+export interface StreamOutIncrementorTable {
+    id: number; // Will always be 0
+    streamId: number;
+}
+
+export type StreamOutIncrementor = Selectable<StreamOutIncrementorTable>;
+export type NewStreamOutIncrementor = Insertable<StreamOutIncrementorTable>;
+export type StreamOutIncrementorUpdate = Updateable<StreamOutIncrementorTable>;
 
 export interface HttpSubscriberTable {
     id: Generated<number>;

@@ -4,6 +4,7 @@ import { db } from './database';
 import {
     createStreamOutFromStreamEvent,
     findTotallyOrderedStreamEvents,
+    getMostRecentStreamOut,
 } from './streamOutStore';
 import {
     createHttpSubscriber,
@@ -84,14 +85,19 @@ app.get('/streamOut', async (req, res) => {
         .setIsolationLevel('serializable')
         .execute(async (trx) => {
             // Get our upstream
-            const records = await findTotallyOrderedStreamEvents(
+            const mostRecent = await getMostRecentStreamOut(trx);
+            const events = await findTotallyOrderedStreamEvents(
                 trx,
                 eventIdStart,
                 eventIdEnd,
                 limit,
                 offset
             );
-            return res.json(records);
+            const totalOrderId = mostRecent ? mostRecent.id : 0;
+            return res.json({
+                totalOrderId,
+                events,
+            });
         });
     // Find all log records with an ID greater than 'afterId'
     // Send the records to the client

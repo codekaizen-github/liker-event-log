@@ -13,7 +13,7 @@ import {
 import cors from 'cors';
 import onEvent from './transmissionControl/onEvent';
 import { notifySubscribers } from './transmissionControl/notifySubscribers';
-import { getMostRecentTotallyOrderedStreamEvent } from './getMostRecentTotallyOrderedStreamEvent';
+import { getMostRecentTotallyOrderedStreamEvents } from './getMostRecentTotallyOrderedStreamEvents';
 
 // Create an Express application
 const app = express();
@@ -52,11 +52,8 @@ app.get('/fencingToken', async (req, res) => {
 });
 
 app.post('/streamIn', async (req, res) => {
-    if (!Array.isArray(req.body)) {
-        return res.status(400).send();
-    }
     try {
-        await onEvent(req.body);
+        await onEvent([req.body]);
     } catch (e) {
         console.error(e);
         return res.status(500).send();
@@ -143,10 +140,14 @@ app.listen(port, () => {
 
 // Get the most recent log record and notify subscribers
 (async () => {
-    const result = await getMostRecentTotallyOrderedStreamEvent();
-    if (result === undefined) {
+    const results = await getMostRecentTotallyOrderedStreamEvents();
+    if (results === undefined) {
         return;
     }
+    if (results.length === 0) {
+        return;
+    }
+    const totalOrderId = results[results.length - 1].totalOrderId;
     // non-blocking
-    notifySubscribers(result);
+    notifySubscribers(results, totalOrderId);
 })();

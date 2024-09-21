@@ -5,7 +5,7 @@ import {
     TotallyOrderedStreamEvent,
 } from './types';
 
-export async function onEventProcessSingle(
+export async function onEventProcess(
     events: NewNotYetTotallyOrderedStreamEvent[]
 ) {
     const results: TotallyOrderedStreamEvent[] = [];

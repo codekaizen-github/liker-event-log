@@ -1,5 +1,5 @@
 import { notifySubscribers } from './notifySubscribers';
-import { onEventProcessSingle } from './onEventProcessSingle';
+import { onEventProcess } from './onEventProcess';
 import { NewNotYetTotallyOrderedStreamEvent } from './types';
 
 export default async function onEvent(
@@ -7,11 +7,13 @@ export default async function onEvent(
 ) {
     // Random delay
     await new Promise((resolve) => setTimeout(resolve, Math.random() * 1000));
-    console.log({ event });
+    console.log({ eventAtOnEvent: event });
     try {
-        const results = await onEventProcessSingle(event);
+        const results = await onEventProcess(event);
+        console.log({ results });
         if (results.length) {
-            notifySubscribers(results);
+            const totalOrderId = results[results.length - 1].totalOrderId;
+            notifySubscribers(results, totalOrderId);
         }
     } catch (e) {
         console.error(e);

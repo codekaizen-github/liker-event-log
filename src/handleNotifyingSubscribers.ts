@@ -3,7 +3,8 @@ import { TotallyOrderedStreamEvent } from './transmissionControl/types';
 import { db } from './database';
 
 export async function handleNotifyingSubscribers(
-    streamOut: TotallyOrderedStreamEvent[]
+    streamOut: TotallyOrderedStreamEvent[],
+    totalOrderId: number
 ): Promise<void> {
     const subscriptions = await db.transaction().execute(async (trx) => {
         return await findHttpSubscribers(trx, {});
@@ -14,13 +15,14 @@ export async function handleNotifyingSubscribers(
             url: subscription.url,
             streamOut: JSON.stringify(streamOut),
         });
-        notifySubscriberUrl(subscription.url, streamOut);
+        notifySubscriberUrl(subscription.url, streamOut, totalOrderId);
     }
 }
 
 export async function notifySubscriberUrl(
     url: string,
-    streamOut: TotallyOrderedStreamEvent[]
+    streamOut: TotallyOrderedStreamEvent[],
+    totalOrderId: number
 ): Promise<void> {
     console.log('notifying subscriber:', { streamOut });
     try {
@@ -29,7 +31,10 @@ export async function notifySubscriberUrl(
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(streamOut),
+            body: JSON.stringify({
+                totalOrderId,
+                events: streamOut,
+            }),
         });
     } catch (e) {
         console.error(e);

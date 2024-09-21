@@ -2,7 +2,7 @@ import { db } from './database';
 import { getMostRecentStreamOutsWithSameTotalOrderId } from './streamOutStore';
 import { TotallyOrderedStreamEvent } from './transmissionControl/types';
 
-export async function getMostRecentTotallyOrderedStreamEvent(): Promise<
+export async function getMostRecentTotallyOrderedStreamEvents(): Promise<
     TotallyOrderedStreamEvent[] | undefined
 > {
     return db.transaction().execute(async (trx) => {

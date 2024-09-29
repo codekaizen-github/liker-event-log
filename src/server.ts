@@ -51,7 +51,7 @@ app.get('/fencingToken', async (req, res) => {
             ]);
             const streamOut = streamOuts[0];
             notifySubscribers(streamOuts, streamOut.totalOrderId);
-            return res.json({ fecingToken: streamOut.totalOrderId });
+            return res.json({ fencingToken: streamOut.totalOrderId });
         });
 });
 

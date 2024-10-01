@@ -21,7 +21,7 @@ import {
     updateStreamOutIncrementor,
 } from './streamOutIncrementorStore';
 import { onEventProcess } from './transmissionControl/onEventProcess';
-
+import { OAuth2Client } from 'google-auth-library';
 // Create an Express application
 const app = express();
 
@@ -140,6 +140,22 @@ app.post('/httpSubscriber/unregister', async (req, res) => {
             return res.status(404).send();
         });
 });
+
+app.post('/test', async (req, res) => {
+    // Validate if Identity Provider has identified user
+    const client = new OAuth2Client(req.body.clientId);
+    const ticket = await client.verifyIdToken({
+        idToken: req.body.credential,
+        audience: req.body.clientId, // Specify the CLIENT_ID of the app that accesses the backend
+        // Or, if multiple clients access the backend:
+        //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
+    });
+    const payloadGoogle = ticket.getPayload();
+    if (undefined === payloadGoogle) {
+        throw new Error('Unauthenticated');
+    }
+    return res.json(payloadGoogle)
+})
 
 // Start the server and listen on the specified port
 app.listen(port, () => {

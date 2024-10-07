@@ -7,8 +7,13 @@ services:
         volumes:
             - ./:/workspace
         networks:
-            - liker_external_network
-            - liker_event_log_internal_network
+            liker_external_network:
+                aliases:
+                    - liker_event_log
+                    - liker-event-log.liker
+            liker_event_log_internal_network:
+        dns:
+            - 8.8.8.8
     db:
         networks:
             - liker_event_log_internal_network
@@ -24,7 +29,7 @@ services:
 networks:
     liker_external_network:
         external: true
-        name: "liker"
+        name: 'liker'
     liker_event_log_internal_network:
         external: false
-        name: "liker_event_log_internal_network"
+        name: 'liker_event_log_internal_network'

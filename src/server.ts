@@ -30,9 +30,13 @@ const port = 80;
 
 app.use(
     cors({
-        origin: '*',
+        // origin: '*',
+        origin: [/(.+)?codekaizen\.net(:[0-9]+)?$/],
+        credentials: true,
+        optionsSuccessStatus: 200,
     })
 );
+
 app.use(express.json());
 
 // Define a route for the root path ('/')
@@ -154,8 +158,8 @@ app.post('/test', async (req, res) => {
     if (undefined === payloadGoogle) {
         throw new Error('Unauthenticated');
     }
-    return res.json(payloadGoogle)
-})
+    return res.json(payloadGoogle);
+});
 
 // Start the server and listen on the specified port
 app.listen(port, () => {

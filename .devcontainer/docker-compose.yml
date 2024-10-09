@@ -11,6 +11,7 @@ services:
                 aliases:
                     - liker_event_log
                     - liker-event-log.liker
+                    - liker-event-log.codekaizen.net
             liker_event_log_internal_network:
         dns:
             - 8.8.8.8

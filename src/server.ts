@@ -33,7 +33,9 @@ app.use(
         // origin: '*',
         origin: [/(.+)?codekaizen\.net(:[0-9]+)?$/],
         credentials: true,
-        optionsSuccessStatus: 200,
+        methods: ['POST', 'GET', 'PATCH', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
+        // optionsSuccessStatus: 200,
     })
 );
 
@@ -61,7 +63,20 @@ app.get('/fencingToken', async (req, res) => {
 
 app.post('/streamIn', async (req, res) => {
     try {
-        await onEvent([req.body]);
+        const requestPayload = { ...req.body };
+        const email = req.headers['x-email'] as string | undefined;
+        if (email !== undefined) {
+            requestPayload.data = requestPayload.data || {};
+            requestPayload.data.payload = requestPayload.data.payload || {};
+            requestPayload.data.payload.user =
+                requestPayload.data.payload.user || {};
+            requestPayload.data.payload.user.email = email;
+        }
+        console.log({ requestPayload: JSON.stringify(requestPayload) });
+        console.log({
+            requestPayloadPayload: JSON.stringify(requestPayload.data.payload),
+        });
+        await onEvent([requestPayload]);
     } catch (e) {
         console.error(e);
         return res.status(500).send();
